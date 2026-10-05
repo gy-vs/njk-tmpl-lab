@@ -120,7 +120,15 @@ function makeMacro(argNames, kwargNames, func) {
 }
 
 function makeKeywordArgs(obj) {
-  obj.__keywords = true;
+  // The marker is non-enumerable so user-registered functions and filters
+  // that iterate or serialize this object (Object.keys, JSON.stringify,
+  // query-string encoding, ...) only see the keys written in the template.
+  Object.defineProperty(obj, '__keywords', {
+    value: true,
+    writable: true,
+    configurable: true,
+    enumerable: false
+  });
   return obj;
 }
 

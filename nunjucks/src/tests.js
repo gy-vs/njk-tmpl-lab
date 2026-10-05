@@ -1,6 +1,7 @@
 'use strict';
 
-var SafeString = require('./runtime').SafeString;
+var r = require('./runtime');
+var SafeString = r.SafeString;
 
 /**
  * Returns `true` if the object is a function, otherwise `false`.
@@ -31,11 +32,11 @@ exports.defined = defined;
  * @param { number } two
  * @returns { boolean }
  */
-function divisibleby(one, two) {
-  return (one % two) === 0;
+function divisibleby(one, num) {
+  return (one % num) === 0;
 }
 
-exports.divisibleby = divisibleby;
+exports.divisibleby = r.makeMacro(['value', 'num'], [], divisibleby);
 
 /**
  * Returns true if the string has been escaped (i.e., is a SafeString).
@@ -53,15 +54,16 @@ exports.escaped = escaped;
  * @param { any } one
  * @param { any } two
  */
-function equalto(one, two) {
-  return one === two;
+function equalto(one, other) {
+  return one === other;
 }
 
-exports.equalto = equalto;
+var equaltoMacro = r.makeMacro(['value', 'other'], [], equalto);
 
 // Aliases
-exports.eq = exports.equalto;
-exports.sameas = exports.equalto;
+exports.equalto = equaltoMacro;
+exports.eq = equaltoMacro;
+exports.sameas = equaltoMacro;
 
 /**
  * Returns `true` if the value is evenly divisible by 2.
@@ -95,11 +97,11 @@ exports.falsy = falsy;
  * @param { number } two
  * @returns { boolean }
  */
-function ge(one, two) {
-  return one >= two;
+function ge(one, other) {
+  return one >= other;
 }
 
-exports.ge = ge;
+exports.ge = r.makeMacro(['value', 'other'], [], ge);
 
 /**
  * Returns `true` if the operand (one) is greater than the test's argument
@@ -108,11 +110,11 @@ exports.ge = ge;
  * @param { number } two
  * @returns { boolean }
  */
-function greaterthan(one, two) {
-  return one > two;
+function greaterthan(one, other) {
+  return one > other;
 }
 
-exports.greaterthan = greaterthan;
+exports.greaterthan = r.makeMacro(['value', 'other'], [], greaterthan);
 
 // alias
 exports.gt = exports.greaterthan;
@@ -124,11 +126,11 @@ exports.gt = exports.greaterthan;
  * @param { number } two
  * @returns { boolean }
  */
-function le(one, two) {
-  return one <= two;
+function le(one, other) {
+  return one <= other;
 }
 
-exports.le = le;
+exports.le = r.makeMacro(['value', 'other'], [], le);
 
 /**
  * Returns `true` if the operand (one) is less than the test's passed argument
@@ -137,11 +139,11 @@ exports.le = le;
  * @param { number } two
  * @returns { boolean }
  */
-function lessthan(one, two) {
-  return one < two;
+function lessthan(one, other) {
+  return one < other;
 }
 
-exports.lessthan = lessthan;
+exports.lessthan = r.makeMacro(['value', 'other'], [], lessthan);
 
 // alias
 exports.lt = exports.lessthan;
@@ -164,11 +166,11 @@ exports.lower = lower;
  * @param { number } two
  * @returns { boolean }
  */
-function ne(one, two) {
-  return one !== two;
+function ne(one, other) {
+  return one !== other;
 }
 
-exports.ne = ne;
+exports.ne = r.makeMacro(['value', 'other'], [], ne);
 
 /**
  * Returns true if the value is strictly equal to `null`.

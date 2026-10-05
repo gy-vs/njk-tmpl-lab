@@ -1,5 +1,7 @@
 'use strict';
 
+var r = require('./runtime');
+
 function cycler(items) {
   var index = -1;
 
@@ -33,6 +35,8 @@ function joiner(sep) {
   };
 }
 
+var joinerMacro = r.makeMacro(['sep'], [], joiner);
+
 // Making this a function instead so it returns a new object
 // each time it's called. That way, if something like an environment
 // uses it, they will each have their own copy.
@@ -64,8 +68,8 @@ function globals() {
       return cycler(Array.prototype.slice.call(arguments));
     },
 
-    joiner(sep) {
-      return joiner(sep);
+    joiner() {
+      return joinerMacro.apply(this, arguments);
     }
   };
 }

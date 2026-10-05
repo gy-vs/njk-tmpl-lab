@@ -77,6 +77,37 @@
       finish(done);
     });
 
+    it('should accept the joiner sep as a keyword argument', function(done) {
+      equal(
+        '{% set comma = joiner(sep=" | ") %}' +
+        '{% for name in names %}{{ comma() }}{{ name }}{% endfor %}',
+        { names: ['ann', 'bob'] },
+        'ann | bob');
+
+      finish(done);
+    });
+
+    it('should pass keyword arguments to global functions as a clean object',
+      function(done) {
+        var env = new Environment();
+        var seenArgs;
+
+        env.addGlobal('debugArgs', function() {
+          seenArgs = Array.prototype.slice.call(arguments);
+          return 'logged';
+        });
+
+        equal('{{ debugArgs(1, mode="x") }}', 'logged', env);
+
+        expect(seenArgs).to.have.length(2);
+        expect(seenArgs[0]).to.be(1);
+        expect(seenArgs[1]).to.eql({ mode: 'x' });
+        expect(Object.keys(seenArgs[1])).to.eql(['mode']);
+        expect(JSON.stringify(seenArgs)).to.be('[1,{"mode":"x"}]');
+
+        finish(done);
+      });
+
     it('should allow addition of globals', function(done) {
       var env = new Environment();
 

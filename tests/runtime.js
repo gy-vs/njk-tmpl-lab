@@ -1,14 +1,16 @@
 (function() {
   'use strict';
 
-  var expect, util, finish, render;
+  var expect, util, finish, render, runtime;
 
   if (typeof require !== 'undefined') {
     expect = require('expect.js');
     util = require('./util');
+    runtime = require('../nunjucks/src/runtime');
   } else {
     expect = window.expect;
     util = window.util;
+    runtime = nunjucks.runtime;
   }
 
   finish = util.finish;
@@ -125,6 +127,21 @@
       delete Object.getPrototypeOf(data).payload;
 
       finish(done);
+    });
+
+    it('should keep the keyword-args marker hidden from enumeration', function() {
+      var copy = {};
+      var kwargs = runtime.makeKeywordArgs({ a: 1 });
+
+      // internal detection still works
+      expect(Object.prototype.hasOwnProperty.call(kwargs, '__keywords'))
+        .to.be(true);
+
+      // but user-facing introspection only sees the template keys
+      expect(Object.keys(kwargs)).to.eql(['a']);
+      expect(JSON.parse(JSON.stringify(kwargs))).to.eql({ a: 1 });
+      Object.keys(kwargs).forEach(function(k) { copy[k] = kwargs[k]; });
+      expect(copy).to.eql({ a: 1 });
     });
   });
 }());

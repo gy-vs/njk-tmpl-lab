@@ -45,7 +45,10 @@ function batch(arr, linecount, fillWith) {
   return res;
 }
 
-exports.batch = batch;
+exports.batch = r.makeMacro(
+  ['value', 'linecount', 'fill_with'], [],
+  batch
+);
 
 function capitalize(str) {
   str = normalize(str, '');
@@ -69,18 +72,21 @@ function center(str, width) {
   return r.copySafeness(str, pre + str + post);
 }
 
-exports.center = center;
+exports.center = r.makeMacro(['value', 'width'], [], center);
 
-function default_(val, def, bool) {
-  if (bool) {
-    return val || def;
+function default_(val, defaultValue, boolean) {
+  if (boolean) {
+    return val || defaultValue;
   } else {
-    return (val !== undefined) ? val : def;
+    return (val !== undefined) ? val : defaultValue;
   }
 }
 
 // TODO: it is confusing to export something called 'default'
-exports['default'] = default_; // eslint-disable-line dot-notation
+exports['default'] = r.makeMacro(
+  ['value', 'default_value', 'boolean'], [],
+  default_
+); // eslint-disable-line dot-notation
 
 function dictsort(val, caseSensitive, by) {
   if (!lib.isObject(val)) {
@@ -122,7 +128,10 @@ function dictsort(val, caseSensitive, by) {
   return array;
 }
 
-exports.dictsort = dictsort;
+exports.dictsort = r.makeMacro(
+  ['value', 'case_sensitive', 'by'], [],
+  dictsort
+);
 
 function dump(obj, spaces) {
   return JSON.stringify(obj, null, spaces);
@@ -163,13 +172,16 @@ function forceescape(str) {
 
 exports.forceescape = forceescape;
 
-function groupby(arr, attr) {
-  return lib.groupBy(arr, attr, this.env.opts.throwOnUndefined);
+function groupby(arr, attribute) {
+  return lib.groupBy(arr, attribute, this.env.opts.throwOnUndefined);
 }
 
-exports.groupby = groupby;
+exports.groupby = r.makeMacro(
+  ['value', 'attribute'], [],
+  groupby
+);
 
-function indent(str, width, indentfirst) {
+function indent(str, width, first) {
   str = normalize(str, '');
 
   if (str === '') {
@@ -182,25 +194,31 @@ function indent(str, width, indentfirst) {
   const sp = lib.repeat(' ', width);
 
   const res = lines.map((l, i) => {
-    return (i === 0 && !indentfirst) ? l : `${sp}${l}`;
+    return (i === 0 && !first) ? l : `${sp}${l}`;
   }).join('\n');
 
   return r.copySafeness(str, res);
 }
 
-exports.indent = indent;
+exports.indent = r.makeMacro(
+  ['value', 'width', 'first'], [],
+  indent
+);
 
-function join(arr, del, attr) {
-  del = del || '';
+function join(arr, d, attribute) {
+  d = d || '';
 
-  if (attr) {
-    arr = lib.map(arr, (v) => v[attr]);
+  if (attribute) {
+    arr = lib.map(arr, (v) => v[attribute]);
   }
 
-  return arr.join(del);
+  return arr.join(d);
 }
 
-exports.join = join;
+exports.join = r.makeMacro(
+  ['value', 'd', 'attribute'], [],
+  join
+);
 
 function last(arr) {
   return arr[arr.length - 1];
@@ -301,8 +319,9 @@ function selectattr(arr, attr) {
 
 exports.selectattr = selectattr;
 
-function replace(str, old, new_, maxCount) {
+function replace(str, old, new_, count) {
   var originalStr = str;
+  var maxCount = count;
 
   if (old instanceof RegExp) {
     return str.replace(old, new_);
@@ -349,15 +368,15 @@ function replace(str, old, new_, maxCount) {
   }
 
   let pos = 0;
-  let count = 0; // # of replacements made
+  let numReplaced = 0; // # of replacements made
 
-  while (nextIndex > -1 && (maxCount === -1 || count < maxCount)) {
+  while (nextIndex > -1 && (maxCount === -1 || numReplaced < maxCount)) {
     // Grab the next chunk of src string and add it with the
     // replacement, to the result
     res += str.substring(pos, nextIndex) + new_;
     // Increment our pointer in the src string
     pos = nextIndex + old.length;
-    count++;
+    numReplaced++;
     // See if there are any more replacements to be made
     nextIndex = str.indexOf(old, pos);
   }
@@ -371,7 +390,10 @@ function replace(str, old, new_, maxCount) {
   return r.copySafeness(originalStr, res);
 }
 
-exports.replace = replace;
+exports.replace = r.makeMacro(
+  ['value', 'old', 'new', 'count'], [],
+  replace
+);
 
 function reverse(val) {
   var arr;
@@ -408,7 +430,10 @@ function round(val, precision, method) {
   return rounder(val * factor) / factor;
 }
 
-exports.round = round;
+exports.round = r.makeMacro(
+  ['value', 'precision', 'method'], [],
+  round
+);
 
 function slice(arr, slices, fillWith) {
   const sliceLength = Math.floor(arr.length / slices);
@@ -433,17 +458,23 @@ function slice(arr, slices, fillWith) {
   return res;
 }
 
-exports.slice = slice;
+exports.slice = r.makeMacro(
+  ['value', 'slices', 'fill_with'], [],
+  slice
+);
 
-function sum(arr, attr, start = 0) {
-  if (attr) {
-    arr = lib.map(arr, (v) => v[attr]);
+function sum(arr, attribute, start = 0) {
+  if (attribute) {
+    arr = lib.map(arr, (v) => v[attribute]);
   }
 
   return start + arr.reduce((a, b) => a + b, 0);
 }
 
-exports.sum = sum;
+exports.sum = r.makeMacro(
+  ['value', 'attribute', 'start'], [],
+  sum
+);
 
 exports.sort = r.makeMacro(
   ['value', 'reverse', 'case_sensitive', 'attribute'], [],
@@ -503,7 +534,10 @@ function striptags(input, preserveLinebreaks) {
   return r.copySafeness(input, res);
 }
 
-exports.striptags = striptags;
+exports.striptags = r.makeMacro(
+  ['value', 'preserve_linebreaks'], [],
+  striptags
+);
 
 function title(str) {
   str = normalize(str, '');
@@ -543,7 +577,10 @@ function truncate(input, length, killwords, end) {
   return r.copySafeness(orig, input);
 }
 
-exports.truncate = truncate;
+exports.truncate = r.makeMacro(
+  ['value', 'length', 'killwords', 'end'], [],
+  truncate
+);
 
 function upper(str) {
   str = normalize(str, '');
@@ -615,7 +652,10 @@ function urlize(str, length, nofollow) {
   return words.join('');
 }
 
-exports.urlize = urlize;
+exports.urlize = r.makeMacro(
+  ['value', 'trim_url_limit', 'nofollow'], [],
+  urlize
+);
 
 function wordcount(str) {
   str = normalize(str, '');
@@ -625,12 +665,15 @@ function wordcount(str) {
 
 exports.wordcount = wordcount;
 
-function float(val, def) {
+function float_(val, default_) {
   var res = parseFloat(val);
-  return (isNaN(res)) ? def : res;
+  return (isNaN(res)) ? default_ : res;
 }
 
-exports.float = float;
+exports.float = r.makeMacro(
+  ['value', 'default'], [],
+  float_
+);
 
 const intFilter = r.makeMacro(
   ['value', 'default', 'base'],

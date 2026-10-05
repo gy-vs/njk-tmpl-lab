@@ -1068,5 +1068,186 @@
       equal('{{ nothing | wordcount }}', '');
       finish(done);
     });
+
+    // Keyword arguments should work exactly like passing the same values
+    // positionally, using the argument names documented by Jinja2.
+    describe('keyword arguments', function() {
+      it('truncate', function(done) {
+        equal('{{ "hello world" | truncate(length=9, end="~", killwords=true) }}',
+          'hello wor~');
+        equal('{{ "hello world" | truncate(9, end="~") }}', 'hello~');
+        // positional calls keep working and match the keyword form
+        equal('{{ "hello world" | truncate(9, true, "~") }}', 'hello wor~');
+        finish(done);
+      });
+
+      it('default', function(done) {
+        equal('{{ missing | default(default_value="n/a", boolean=true) }}',
+          'n/a');
+        equal('{{ 0 | default(default_value="n/a", boolean=true) }}',
+          'n/a');
+        equal('{{ "x" | default(default_value="n/a", boolean=true) }}',
+          'x');
+        equal('{{ missing | default("n/a", true) }}', 'n/a');
+        finish(done);
+      });
+
+      it('indent', function(done) {
+        equal('{{ "a\\nb" | indent(width=2, first=true) }}', '  a\n  b');
+        equal('{{ "a\\nb" | indent(width=2) }}', 'a\n  b');
+        equal('{{ "a\\nb" | indent(2, true) }}', '  a\n  b');
+        finish(done);
+      });
+
+      it('round', function(done) {
+        equal('{{ 2.567 | round(precision=1) }}', '2.6');
+        equal('{{ 2.561 | round(1, method="floor") }}', '2.5');
+        equal('{{ 2.561 | round(1, "floor") }}', '2.5');
+        equal('{{ 4 | round(method="ceil") }}', '4');
+        equal('{{ 3.5 | round }}', '4');
+        finish(done);
+      });
+
+      it('join', function(done) {
+        equal('{{ ["a", "b"] | join(d="-") }}', 'a-b');
+        equal('{{ users | join(", ", attribute="name") }}',
+          { users: [{ name: 'ann' }, { name: 'bob' }] },
+          'ann, bob');
+        equal('{{ ["a", "b"] | join("-") }}', 'a-b');
+        finish(done);
+      });
+
+      it('replace', function(done) {
+        equal('{{ "aaa" | replace("a", "b", count=2) }}', 'bba');
+        equal('{{ "aaa" | replace("a", "b", 2) }}', 'bba');
+        equal('{{ "aaa" | replace(old="a", new="b") }}', 'bbb');
+        finish(done);
+      });
+
+      it('sum', function(done) {
+        equal('{{ users | sum(attribute="age", start=1) }}',
+          { users: [{ age: 20 }, { age: 30 }] },
+          '51');
+        equal('{{ [1, 2] | sum(start=1) }}', '4');
+        equal('{{ users | sum("age", 1) }}',
+          { users: [{ age: 20 }, { age: 30 }] },
+          '51');
+        finish(done);
+      });
+
+      it('sort', function(done) {
+        // already supported, make sure it stays that way
+        equal('{{ [2, 1, 3] | sort(reverse=true) | join(",") }}', '3,2,1');
+        equal('{% for u in users | sort(attribute="age") %}{{ u.name }},{% endfor %}',
+          { users: [{ name: 'bob', age: 30 }, { name: 'ann', age: 20 }] },
+          'ann,bob,');
+        finish(done);
+      });
+
+      it('int', function(done) {
+        // already supported, make sure it stays that way
+        equal('{{ "x" | int(default=3) }}', '3');
+        equal('{{ "ff" | int(default=7, base=16) }}', '255');
+        finish(done);
+      });
+
+      it('batch', function(done) {
+        equal('{% for row in [1, 2, 3] | batch(linecount=2, fill_with="x") %}' +
+          '{{ row | join(",") }};' +
+          '{% endfor %}', '1,2;3,x;');
+        finish(done);
+      });
+
+      it('center', function(done) {
+        equal('{{ "a" | center(width=3) }}', ' a ');
+        finish(done);
+      });
+
+      it('dictsort', function(done) {
+        equal('{% for k, v in {b: 1, a: 2} | dictsort() %}{{ k }}{{ v }}{% endfor %}',
+          'a2b1');
+        equal('{% for k, v in {B: 1, a: 2} | dictsort(case_sensitive=true) %}' +
+          '{{ k }}{{ v }}{% endfor %}',
+          'B1a2');
+        finish(done);
+      });
+
+      it('slice', function(done) {
+        equal('{% for row in [1, 2, 3] | slice(slices=2, fill_with="x") %}' +
+          '{{ row | join(",") }};' +
+          '{% endfor %}', '1,2;3,x;');
+        finish(done);
+      });
+
+      it('groupby', function(done) {
+        equal('{% for k, items in items | groupby(attribute="k") %}' +
+          '{{ k }}:{{ items | length }};' +
+          '{% endfor %}',
+          { items: [{ k: 'x' }, { k: 'x' }, { k: 'y' }] },
+          'x:2;y:1;');
+        finish(done);
+      });
+
+      it('striptags', function(done) {
+        equal('{{ "<p>a<br> b</p>" | striptags }}', 'a b');
+        equal('{{ "<p>a\n\nb</p>" | striptags(preserve_linebreaks=true) }}',
+          'a\n\nb');
+        finish(done);
+      });
+
+      it('urlize', function(done) {
+        equal('{{ "http://example.com/" | urlize(trim_url_limit=7, nofollow=true) | safe }}',
+          '<a href="http://example.com/" rel="nofollow">http://</a>');
+        finish(done);
+      });
+
+      it('float', function(done) {
+        equal('{{ "x" | float(default=1.5) }}', '1.5');
+        finish(done);
+      });
+
+      it('passes only the template-written keys to user filters', function(done) {
+        var seen;
+        render('{{ "x" | kwfilter(mode="z") }}', null, {
+          filters: {
+            kwfilter: function(val, kwargs) {
+              seen = kwargs;
+              return Object.keys(kwargs).sort().join(',') + ':' + kwargs.mode;
+            }
+          }
+        });
+        expect(seen).to.eql({ mode: 'z' });
+        // The internal keyword-args marker must not leak into enumeration
+        // or serialization of the object handed to user code.
+        expect(Object.keys(seen)).to.eql(['mode']);
+        expect(JSON.parse(JSON.stringify(seen))).to.eql({ mode: 'z' });
+        finish(done);
+      });
+
+      it('passes a clean keyword-args object to async user filters', function(done) {
+        var seen;
+        if (typeof window !== 'undefined') {
+          // exercised in the node suite
+          this.skip();
+          return;
+        }
+        render('{{ "x" | remote(lang="zh") }}', null, {
+          asyncFilters: {
+            remote: function(val, kwargs, cb) {
+              seen = kwargs;
+              cb(null, Object.keys(kwargs).map(function(k) {
+                return k + '=' + kwargs[k];
+              }).join('&'));
+            }
+          }
+        }, function(err, res) {
+          expect(err).to.be(null);
+          expect(res).to.be('lang=zh');
+          expect(seen).to.eql({ lang: 'zh' });
+          expect(Object.keys(seen)).to.eql(['lang']);
+          finish(done);
+        });
+      });
+    });
   });
 }());

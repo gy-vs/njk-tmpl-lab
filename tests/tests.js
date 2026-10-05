@@ -255,5 +255,31 @@
       expect(render('{{ "FOOBAR" is upper }}')).to.be('true');
       expect(render('{{ "Foobar" is upper }}')).to.be('false');
     });
+
+    describe('keyword arguments', function() {
+      it('divisibleby should accept its num argument as a keyword', function() {
+        expect(render('{% if 9 is divisibleby(num=3) %}yes{% else %}no{% endif %}'))
+          .to.be('yes');
+        expect(render('{{ 9 is divisibleby(num=4) }}')).to.be('false');
+      });
+
+      it('comparison tests should accept their other argument as a keyword', function() {
+        expect(render('{{ 5 is greaterthan(other=4) }}')).to.be('true');
+        expect(render('{{ 5 is ge(other=5) }}')).to.be('true');
+        expect(render('{{ 5 is lessthan(other=4) }}')).to.be('false');
+        expect(render('{{ 5 is le(other=5) }}')).to.be('true');
+        expect(render('{{ 5 is ne(other=5) }}')).to.be('false');
+        expect(render('{{ 1 is equalto(other=1) }}')).to.be('true');
+        expect(render('{{ 1 is eq(other=2) }}')).to.be('false');
+      });
+
+      it('sameas should accept its other argument as a keyword', function() {
+        var obj = {};
+        expect(render('{{ obj1 is sameas(other=obj2) }}', {
+          obj1: obj,
+          obj2: obj
+        })).to.be('true');
+      });
+    });
   });
 }());
