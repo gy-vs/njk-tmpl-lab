@@ -120,7 +120,16 @@ function makeMacro(argNames, kwargNames, func) {
 }
 
 function makeKeywordArgs(obj) {
-  obj.__keywords = true;
+  // Mark the object as holding keyword arguments with a non-enumerable
+  // property: functions receiving this object should only see the keys
+  // the caller actually wrote (e.g. when they serialize or spread it),
+  // while isKeywordArgs can still detect the marker via hasOwnProperty.
+  Object.defineProperty(obj, '__keywords', {
+    value: true,
+    writable: true,
+    enumerable: false,
+    configurable: true
+  });
   return obj;
 }
 

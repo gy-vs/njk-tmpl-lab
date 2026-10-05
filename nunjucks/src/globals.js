@@ -1,5 +1,7 @@
 'use strict';
 
+var makeMacro = require('./runtime').makeMacro;
+
 function cycler(items) {
   var index = -1;
 
@@ -64,9 +66,7 @@ function globals() {
       return cycler(Array.prototype.slice.call(arguments));
     },
 
-    joiner(sep) {
-      return joiner(sep);
-    }
+    joiner: makeMacro(['sep'], [], joiner)
   };
 }
 

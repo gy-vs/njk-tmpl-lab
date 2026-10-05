@@ -90,6 +90,11 @@
       expect(notDivisible).to.be('true');
     });
 
+    it('divisibleby should accept keyword arguments', function() {
+      expect(render('{{ 9 is divisibleby(num=3) }}')).to.be('true');
+      expect(render('{{ 10 is divisibleby(num=3) }}')).to.be('false');
+    });
+
     it('escaped should test whether or not something is escaped', function() {
       var escaped = render('{{ (foo | safe) is escaped }}', {
         foo: 'foobarbaz'
@@ -254,6 +259,19 @@
     it('upper should detect whether or not a string is uppercased', function() {
       expect(render('{{ "FOOBAR" is upper }}')).to.be('true');
       expect(render('{{ "Foobar" is upper }}')).to.be('false');
+    });
+
+    it('comparison tests should accept keyword arguments', function() {
+      expect(render('{{ 2 is equalto(other=2) }}')).to.be('true');
+      expect(render('{{ 2 is eq(other=2) }}')).to.be('true');
+      expect(render('{{ 2 is sameas(other=2) }}')).to.be('true');
+      expect(render('{{ 2 is ne(other=3) }}')).to.be('true');
+      expect(render('{{ 5 is greaterthan(other=4) }}')).to.be('true');
+      expect(render('{{ 5 is gt(other=4) }}')).to.be('true');
+      expect(render('{{ 5 is ge(other=5) }}')).to.be('true');
+      expect(render('{{ 4 is lessthan(other=5) }}')).to.be('true');
+      expect(render('{{ 4 is lt(other=5) }}')).to.be('true');
+      expect(render('{{ 4 is le(other=4) }}')).to.be('true');
     });
   });
 }());

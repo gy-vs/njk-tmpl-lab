@@ -1068,5 +1068,224 @@
       equal('{{ nothing | wordcount }}', '');
       finish(done);
     });
+
+    describe('keyword arguments', function() {
+      it('batch', function(done) {
+        equal(
+          '{% for a in [1,2,3,4,5] | batch(linecount=2, fill_with="x") %}' +
+          '{{ a | join("") }};{% endfor %}',
+          '12;34;5x;');
+        finish(done);
+      });
+
+      it('center', function(done) {
+        equal('{{ "foo" | center(width=7) }}', '  foo  ');
+        finish(done);
+      });
+
+      it('default', function(done) {
+        equal('{{ none | default(default_value="n/a", boolean=true) }}', 'n/a');
+        equal('{{ false | default(default_value="n/a", boolean=true) }}', 'n/a');
+        equal('{{ "bar" | default(default_value="n/a") }}', 'bar');
+        equal('{{ bar | default(default_value="n/a") }}', 'n/a');
+        finish(done);
+      });
+
+      it('dictsort', function(done) {
+        equal(
+          '{% for pair in {"b": 2, "a": 1} | dictsort(by="value") %}' +
+          '{{ pair[0] }}{% endfor %}',
+          'ab');
+        equal(
+          '{% for pair in {"a": 1, "B": 2} | dictsort(case_sensitive=true) %}' +
+          '{{ pair[0] }}{% endfor %}',
+          'Ba');
+        equal(
+          '{% for pair in {"a": 1, "B": 2} | dictsort(case_sensitive=false) %}' +
+          '{{ pair[0] }}{% endfor %}',
+          'aB');
+        finish(done);
+      });
+
+      it('dump', function(done) {
+        equal('{{ [1] | dump(spaces=2) }}', '[\n  1\n]');
+        finish(done);
+      });
+
+      it('float', function(done) {
+        equal('{{ "nope" | float(default=1.5) }}', '1.5');
+        equal('{{ "2.5" | float(default=1.5) }}', '2.5');
+        finish(done);
+      });
+
+      it('groupby', function(done) {
+        equal(
+          '{% for type, items in items | groupby(attribute="type") %}' +
+          ':{{ type }}:' +
+          '{% for item in items %}' +
+          '{{ item.name }}' +
+          '{% endfor %}' +
+          '{% endfor %}',
+          {
+            items: [{
+              name: 'james',
+              type: 'green'
+            },
+            {
+              name: 'john',
+              type: 'blue'
+            },
+            {
+              name: 'jessie',
+              type: 'green'
+            }]
+          },
+          ':green:jamesjessie:blue:john');
+        finish(done);
+      });
+
+      it('indent', function(done) {
+        equal('{{ "a\nb" | indent(width=2, first=true) }}', '  a\n  b');
+        equal('{{ "a\nb" | indent(width=2) }}', 'a\n  b');
+        equal('{{ "a\nb" | indent(2, first=true) }}', '  a\n  b');
+        finish(done);
+      });
+
+      it('join', function(done) {
+        equal('{{ ["a", "b"] | join(d="-") }}', 'a-b');
+        equal('{{ items | join(", ", attribute="name") }}', {
+          items: [{
+            name: 'ann'
+          },
+          {
+            name: 'bob'
+          }]
+        }, 'ann, bob');
+        equal('{{ items | join(attribute="name") }}', {
+          items: [{
+            name: 'ann'
+          },
+          {
+            name: 'bob'
+          }]
+        }, 'annbob');
+        finish(done);
+      });
+
+      it('replace', function(done) {
+        equal('{{ "aaa" | replace("a", "b", count=2) }}', 'bba');
+        equal('{{ "aaa" | replace("a", "b") }}', 'bbb');
+        finish(done);
+      });
+
+      it('round', function(done) {
+        equal('{{ 2.567 | round(precision=1) }}', '2.6');
+        equal('{{ 2.561 | round(1, method="floor") }}', '2.5');
+        equal('{{ 2.561 | round(precision=1, method="ceil") }}', '2.6');
+        finish(done);
+      });
+
+      it('select and reject', function(done) {
+        equal('{{ [0,1,2,3,4,5] | select(test_name="even") | join }}', '024');
+        equal('{{ [0,1,2,3,4,5] | reject(test_name="even") | join }}', '135');
+        equal('{{ [0,1,2,3,4,5] | select(test_name="divisibleby", secondArg=3) | join }}',
+          '03');
+        finish(done);
+      });
+
+      it('selectattr and rejectattr', function(done) {
+        var ctx = {
+          foods: [{
+            tasty: true
+          },
+          {
+            tasty: false
+          }]
+        };
+        equal('{{ foods | selectattr(attribute="tasty") | length }}', ctx, '1');
+        equal('{{ foods | rejectattr(attribute="tasty") | length }}', ctx, '1');
+        finish(done);
+      });
+
+      it('slice', function(done) {
+        equal(
+          '{% for s in [1,2,3] | slice(slices=2, fill_with="x") %}' +
+          '{{ s | join("") }};{% endfor %}',
+          '12;3x;');
+        finish(done);
+      });
+
+      it('striptags', function(done) {
+        equal('{{ html | striptags(preserve_linebreaks=true) }}',
+          {
+            html: '<div>\n  row1\nrow2  \n  <strong>row3</strong>\n</div>\n\n' +
+              ' HEADER \n\n<ul>\n  <li>option  1</li>\n<li>option  2</li>\n</ul>'
+          },
+          'row1\nrow2\nrow3\n\nHEADER\n\noption 1\noption 2');
+        finish(done);
+      });
+
+      it('sum', function(done) {
+        var ctx = {
+          items: [{
+            age: 20
+          },
+          {
+            age: 30
+          }]
+        };
+        equal('{{ items | sum(attribute="age", start=1) }}', ctx, '51');
+        equal('{{ items | sum(attribute="age") }}', ctx, '50');
+        equal('{{ items | sum(start=1) }}', {items: [1, 2, 3]}, '7');
+        finish(done);
+      });
+
+      it('truncate', function(done) {
+        equal('{{ "hello world" | truncate(length=9, end="~", killwords=true) }}',
+          'hello wor~');
+        equal('{{ "hello world" | truncate(9, end="~") }}', 'hello~');
+        equal('{{ "hello world" | truncate(length=5) }}', 'hello...');
+        equal('{{ "hello world" | truncate(9, killwords=true) }}', 'hello wor...');
+        finish(done);
+      });
+
+      it('urlize', function(done) {
+        equal('{{ "http://jinja.pocoo.org/docs/templates/" | urlize(length=12, nofollow=true) | safe }}',
+          '<a href="http://jinja.pocoo.org/docs/templates/" rel="nofollow">http://jinja</a>');
+        finish(done);
+      });
+
+      it('should pass keyword args to custom filters as a plain object', function(done) {
+        var received;
+        equal('{{ "x" | collect(1, mode="y") }}', {}, {
+          filters: {
+            collect: function(input, n, kwargs) {
+              received = kwargs;
+              return n;
+            }
+          }
+        }, '1');
+        expect(JSON.stringify(received)).to.be('{"mode":"y"}');
+        expect(Object.keys(received)).to.eql(['mode']);
+        finish(done);
+      });
+
+      it('should pass keyword args to async filters as a plain object', function(done) {
+        var received;
+        render('{{ "x" | remote(lang="zh") }}', {}, {
+          asyncFilters: {
+            remote: function(input, kwargs, cb) {
+              received = kwargs;
+              cb(null, input);
+            }
+          }
+        }, function(err, res) {
+          expect(res).to.be('x');
+          expect(JSON.stringify(received)).to.be('{"lang":"zh"}');
+          expect(Object.keys(received)).to.eql(['lang']);
+        });
+        finish(done);
+      });
+    });
   });
 }());

@@ -77,6 +77,31 @@
       finish(done);
     });
 
+    it('should have joiner with keyword args', function(done) {
+      equal(
+        '{% set pipe = joiner(sep=" | ") %}' +
+        'foo{{ pipe() }}bar{{ pipe() }}baz{{ pipe() }}',
+        'foobar | baz | ');
+
+      finish(done);
+    });
+
+    it('should pass keyword args to global functions as a plain object', function(done) {
+      var env = new Environment();
+      var received;
+
+      env.addGlobal('debugArgs', function() {
+        received = Array.prototype.slice.call(arguments);
+        return '';
+      });
+
+      render('{{ debugArgs(1, mode="x") }}', null, {}, env);
+
+      expect(JSON.stringify(received)).to.be('[1,{"mode":"x"}]');
+      expect(Object.keys(received[1])).to.eql(['mode']);
+      finish(done);
+    });
+
     it('should allow addition of globals', function(done) {
       var env = new Environment();
 

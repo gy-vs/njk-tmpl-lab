@@ -45,7 +45,7 @@ function batch(arr, linecount, fillWith) {
   return res;
 }
 
-exports.batch = batch;
+exports.batch = r.makeMacro(['arr', 'linecount', 'fill_with'], [], batch);
 
 function capitalize(str) {
   str = normalize(str, '');
@@ -69,7 +69,7 @@ function center(str, width) {
   return r.copySafeness(str, pre + str + post);
 }
 
-exports.center = center;
+exports.center = r.makeMacro(['str', 'width'], [], center);
 
 function default_(val, def, bool) {
   if (bool) {
@@ -80,7 +80,8 @@ function default_(val, def, bool) {
 }
 
 // TODO: it is confusing to export something called 'default'
-exports['default'] = default_; // eslint-disable-line dot-notation
+exports['default'] = r.makeMacro( // eslint-disable-line dot-notation
+  ['val', 'default_value', 'boolean'], [], default_);
 
 function dictsort(val, caseSensitive, by) {
   if (!lib.isObject(val)) {
@@ -122,13 +123,13 @@ function dictsort(val, caseSensitive, by) {
   return array;
 }
 
-exports.dictsort = dictsort;
+exports.dictsort = r.makeMacro(['val', 'case_sensitive', 'by'], [], dictsort);
 
 function dump(obj, spaces) {
   return JSON.stringify(obj, null, spaces);
 }
 
-exports.dump = dump;
+exports.dump = r.makeMacro(['obj', 'spaces'], [], dump);
 
 function escape(str) {
   if (str instanceof r.SafeString) {
@@ -167,7 +168,7 @@ function groupby(arr, attr) {
   return lib.groupBy(arr, attr, this.env.opts.throwOnUndefined);
 }
 
-exports.groupby = groupby;
+exports.groupby = r.makeMacro(['arr', 'attribute'], [], groupby);
 
 function indent(str, width, indentfirst) {
   str = normalize(str, '');
@@ -188,7 +189,7 @@ function indent(str, width, indentfirst) {
   return r.copySafeness(str, res);
 }
 
-exports.indent = indent;
+exports.indent = r.makeMacro(['str', 'width', 'first'], [], indent);
 
 function join(arr, del, attr) {
   del = del || '';
@@ -200,7 +201,7 @@ function join(arr, del, attr) {
   return arr.join(del);
 }
 
-exports.join = join;
+exports.join = r.makeMacro(['arr', 'd', 'attribute'], [], join);
 
 function last(arr) {
   return arr[arr.length - 1];
@@ -282,7 +283,7 @@ function getSelectOrReject(expectedTestResult) {
     });
   }
 
-  return filter;
+  return r.makeMacro(['arr', 'test_name', 'secondArg'], [], filter);
 }
 
 exports.reject = getSelectOrReject(false);
@@ -291,7 +292,7 @@ function rejectattr(arr, attr) {
   return arr.filter((item) => !item[attr]);
 }
 
-exports.rejectattr = rejectattr;
+exports.rejectattr = r.makeMacro(['arr', 'attribute'], [], rejectattr);
 
 exports.select = getSelectOrReject(true);
 
@@ -299,7 +300,7 @@ function selectattr(arr, attr) {
   return arr.filter((item) => !!item[attr]);
 }
 
-exports.selectattr = selectattr;
+exports.selectattr = r.makeMacro(['arr', 'attribute'], [], selectattr);
 
 function replace(str, old, new_, maxCount) {
   var originalStr = str;
@@ -371,7 +372,7 @@ function replace(str, old, new_, maxCount) {
   return r.copySafeness(originalStr, res);
 }
 
-exports.replace = replace;
+exports.replace = r.makeMacro(['str', 'old', 'new', 'count'], [], replace);
 
 function reverse(val) {
   var arr;
@@ -408,7 +409,7 @@ function round(val, precision, method) {
   return rounder(val * factor) / factor;
 }
 
-exports.round = round;
+exports.round = r.makeMacro(['val', 'precision', 'method'], [], round);
 
 function slice(arr, slices, fillWith) {
   const sliceLength = Math.floor(arr.length / slices);
@@ -433,7 +434,7 @@ function slice(arr, slices, fillWith) {
   return res;
 }
 
-exports.slice = slice;
+exports.slice = r.makeMacro(['arr', 'slices', 'fill_with'], [], slice);
 
 function sum(arr, attr, start = 0) {
   if (attr) {
@@ -443,7 +444,7 @@ function sum(arr, attr, start = 0) {
   return start + arr.reduce((a, b) => a + b, 0);
 }
 
-exports.sum = sum;
+exports.sum = r.makeMacro(['arr', 'attribute', 'start'], [], sum);
 
 exports.sort = r.makeMacro(
   ['value', 'reverse', 'case_sensitive', 'attribute'], [],
@@ -503,7 +504,7 @@ function striptags(input, preserveLinebreaks) {
   return r.copySafeness(input, res);
 }
 
-exports.striptags = striptags;
+exports.striptags = r.makeMacro(['input', 'preserve_linebreaks'], [], striptags);
 
 function title(str) {
   str = normalize(str, '');
@@ -543,7 +544,7 @@ function truncate(input, length, killwords, end) {
   return r.copySafeness(orig, input);
 }
 
-exports.truncate = truncate;
+exports.truncate = r.makeMacro(['input', 'length', 'killwords', 'end'], [], truncate);
 
 function upper(str) {
   str = normalize(str, '');
@@ -615,7 +616,7 @@ function urlize(str, length, nofollow) {
   return words.join('');
 }
 
-exports.urlize = urlize;
+exports.urlize = r.makeMacro(['str', 'length', 'nofollow'], [], urlize);
 
 function wordcount(str) {
   str = normalize(str, '');
@@ -630,7 +631,7 @@ function float(val, def) {
   return (isNaN(res)) ? def : res;
 }
 
-exports.float = float;
+exports.float = r.makeMacro(['val', 'default'], [], float);
 
 const intFilter = r.makeMacro(
   ['value', 'default', 'base'],
